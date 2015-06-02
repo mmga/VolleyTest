@@ -10,14 +10,20 @@ import android.widget.Toast;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.GSONRequest;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.NetworkImageView;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.android.volley.toolbox.XMLRequest;
 
 import org.json.JSONObject;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
 
 
 public class MainActivity extends Activity {
@@ -37,6 +43,8 @@ public class MainActivity extends Activity {
 //        useImageRequest();
         useImageLoader();
         useNetworkImageView();
+//        useXmlRequest();
+        useGsonRequest();
     }
 
     private void jsonRequest() {
@@ -55,7 +63,6 @@ public class MainActivity extends Activity {
         });
         mQueue.add(jsonObjectRequest);
     }
-
 
     public void getHttpConnection() {
         RequestQueue mQueue = Volley.newRequestQueue(MainActivity.this);
@@ -94,6 +101,7 @@ public class MainActivity extends Activity {
         mQueue.add(imageRequest);
     }
 
+
     public void useImageLoader() {
         RequestQueue mQueue = Volley.newRequestQueue(MainActivity.this);
         ImageLoader imageLoader = new ImageLoader(mQueue, new BitmapCache()
@@ -109,6 +117,63 @@ public class MainActivity extends Activity {
         RequestQueue mQueue = Volley.newRequestQueue(MainActivity.this);
         ImageLoader imageLoader = new ImageLoader(mQueue, new BitmapCache());
         networkImageView.setImageUrl("http://img.my.csdn.net/uploads/201404/13/1397393290_5765.jpeg", imageLoader);
+    }
+
+    private void useXmlRequest() {
+        RequestQueue mQueue = Volley.newRequestQueue(MainActivity.this);
+        XMLRequest xmlRequest = new XMLRequest("http://flash.weather.com.cn/wmaps/xml/china.xml",
+                new Response.Listener<XmlPullParser>() {
+                    @Override
+                    public void onResponse(XmlPullParser response) {
+                        try {
+                            int eventType = response.getEventType();
+                            while (eventType != XmlPullParser.END_DOCUMENT) {
+                                switch (eventType) {
+                                    case XmlPullParser.START_TAG:
+                                        String nodeName = response.getName();
+                                        if ("city".equals(nodeName)) {
+                                            String pName = response.getAttributeValue(0);
+                                            Log.d(">>>>>>>", "pName is " + pName);
+                                        }
+                                        break;
+                                }
+                                eventType = response.next();
+                            }
+
+
+                        } catch (XmlPullParserException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(">>>>>>>>>>>", error.getMessage(), error);
+            }
+        });
+        mQueue.add(xmlRequest);
+    }
+
+    private void useGsonRequest() {
+        RequestQueue mQueue = Volley.newRequestQueue(MainActivity.this);
+        GSONRequest<Weather> gsonRequest = new GSONRequest<Weather>("http://www.weather.com.cn/data/sk/101010100.html",
+                Weather.class, new Response.Listener<Weather>() {
+            @Override
+            public void onResponse(Weather weather) {
+                WeatherInfo weatherInfo = weather.getWeatherinfo();
+                Log.d(">>>>>>>", "city is " + weatherInfo.getCity());
+                Log.d(">>>>>>>", "temp is " + weatherInfo.getTemp());
+                Log.d(">>>>>>>", "time is " + weatherInfo.getTime());
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(">>>>>>>>", error.getMessage(), error);
+            }
+        });
+        mQueue.add(gsonRequest);
     }
 
 }
