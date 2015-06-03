@@ -38,8 +38,8 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         imageView = (ImageView) findViewById(R.id.image);
         networkImageView = (NetworkImageView) findViewById(R.id.network_image);
-//        getHttpConnection();
-//        jsonRequest();
+//        useStringRequest();
+//        useJsonRequest();
 //        useImageRequest();
         useImageLoader();
         useNetworkImageView();
@@ -47,7 +47,7 @@ public class MainActivity extends Activity {
         useGsonRequest();
     }
 
-    private void jsonRequest() {
+    private void useJsonRequest() {
         RequestQueue mQueue = Volley.newRequestQueue(MainActivity.this);
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest("http://m.weather.com.cn/data/101010100.html", null,
                 new Response.Listener<JSONObject>() {
@@ -64,26 +64,37 @@ public class MainActivity extends Activity {
         mQueue.add(jsonObjectRequest);
     }
 
-    public void getHttpConnection() {
+    public void useStringRequest() {
+        //获取到一个RequestQueue对象
         RequestQueue mQueue = Volley.newRequestQueue(MainActivity.this);
+//        创建一个StringRequest对象.需要传入三个参数，
+//        第一个参数就是目标服务器的URL地址，
+//        第二个参数是服务器响应成功的回调，
+//        第三个参数是服务器响应失败的回调。
         StringRequest stringRequest = new StringRequest("http://www.baidu.com",
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
                         Log.d(">>>>>>>>>", response);
                     }
-                }, new Response.ErrorListener(){
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e(">>>>>>>>>>", error.getMessage(), error);
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(">>>>>>>>>>", error.getMessage(), error);
             }
         });
+//        将这个StringRequest对象添加到RequestQueue里面
         mQueue.add(stringRequest);
-
     }
 
     public void useImageRequest() {
         RequestQueue mQueue = Volley.newRequestQueue(MainActivity.this);
+//        第一个参数就是图片的URL地址
+//        第二个参数是图片请求成功的回调，这里我们把返回的Bitmap参数设置到ImageView中
+//        第三第四个参数分别用于指定允许图片最大的宽度和高度,0为不限制
+//        第五个参数用于指定图片的颜色属性，其中ARGB_8888可以展示最好的颜色属性每个图片像素占据4个字节的大小，
+//              RGB_565则表示每个图片像素占据2个字节大小
+//        第六个参数是图片请求失败的回调
         ImageRequest imageRequest = new ImageRequest("http://img.my.csdn.net/uploads/201404/13/1397393290_5765.jpeg",
         new Response.Listener<Bitmap>() {
             @Override
@@ -104,6 +115,7 @@ public class MainActivity extends Activity {
 
     public void useImageLoader() {
         RequestQueue mQueue = Volley.newRequestQueue(MainActivity.this);
+//        第一个参数就是RequestQueue对象，第二个参数是一个ImageCache对象
         ImageLoader imageLoader = new ImageLoader(mQueue, new BitmapCache()
         );
         ImageLoader.ImageListener listener = ImageLoader.getImageListener(imageView,
